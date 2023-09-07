@@ -408,43 +408,39 @@ class ReactExoplayerView extends FrameLayout implements
     }
 
     private MediaSource buildMediaSource(Uri uri, String overrideExtension) {
-        int type = Util.inferContentType(!TextUtils.isEmpty(overrideExtension) ? "." + overrideExtension
-                : uri.getLastPathSegment());
-        switch (type) {
-            case C.TYPE_SS:
-                Log.d("TYPE_OTHER","TYPE_SS");
-                return new SsMediaSource(uri, buildDataSourceFactory(false),
-                        new DefaultSsChunkSource.Factory(mediaDataSourceFactory), 
-                        minLoadRetryCount, SsMediaSource.DEFAULT_LIVE_PRESENTATION_DELAY_MS, 
-                        mainHandler, null);
-            case C.TYPE_DASH:
-                Log.d("TYPE_OTHER","TYPE_DASH");
-                return new DashMediaSource(uri, buildDataSourceFactory(false),
-                        new DefaultDashChunkSource.Factory(mediaDataSourceFactory), 
-                        minLoadRetryCount, DashMediaSource.DEFAULT_LIVE_PRESENTATION_DELAY_MS,
-                        mainHandler, null);
-            case C.TYPE_HLS:
-                Log.d("TYPE_OTHER","TYPE_HLS");
-                /*return new HlsMediaSource(uri, mediaDataSourceFactory,
-                        minLoadRetryCount, mainHandler, null);*/
-               /* return new HlsMediaSource(uri, mediaDataSourceFactory,
-                        minLoadRetryCount, mainHandler, null);*/
-                return new HlsMediaSource.Factory(mediaDataSourceFactory).createMediaSource(uri);
+    int type = Util.inferContentType(!TextUtils.isEmpty(overrideExtension) ? "." + overrideExtension : uri.getLastPathSegment());
+    mediaDataSourceFactory = new AndroidCacheDataSourceFactory(themedReactContext, 1000L * 1024 * 1024, 50 * 1024 * 1024);
+    switch (type) {
+        case C.TYPE_SS:
+            Log.d("TYPE_OTHER", "TYPE_SS");
+            return new SsMediaSource(uri, buildDataSourceFactory(false),
+                    new DefaultSsChunkSource.Factory(mediaDataSourceFactory),
+                    minLoadRetryCount, SsMediaSource.DEFAULT_LIVE_PRESENTATION_DELAY_MS,
+                    mainHandler, null);
+        case C.TYPE_DASH:
+            Log.d("TYPE_OTHER", "TYPE_DASH");
+            return new DashMediaSource(uri, buildDataSourceFactory(false),
+                    new DefaultDashChunkSource.Factory(mediaDataSourceFactory),
+                    minLoadRetryCount, DashMediaSource.DEFAULT_LIVE_PRESENTATION_DELAY_MS,
+                    mainHandler, null);
+        case C.TYPE_HLS:
+            Log.d("TYPE_OTHER", "TYPE_HLS");
+            /*return new HlsMediaSource(uri, mediaDataSourceFactory,
+                    minLoadRetryCount, mainHandler, null);*/
+           /* return new HlsMediaSource(uri, mediaDataSourceFactory,
+                    minLoadRetryCount, mainHandler, null);*/
+            return new HlsMediaSource.Factory(mediaDataSourceFactory).createMediaSource(uri);
 
-            case C.TYPE_OTHER:
-                Log.d("TYPE_OTHER",uri.toString());
-                Log.d("TYPE_OTHER2",mediaDataSourceFactory.toString());
-                Log.d("TYPE_OTHER3",  new AndroidCacheDataSourceFactory(themedReactContext, 300 * 1024 * 1024, 5 * 1024 * 1024).toString());
-                //300 is cache size you can define it as you want
-                return new ExtractorMediaSource(uri,
-                        new AndroidCacheDataSourceFactory(themedReactContext, 300 * 1024 * 1024, 5 * 1024 * 1024), new DefaultExtractorsFactory(), mainHandler, null);
-              //  return new ExtractorMediaSource(uri, mediaDataSourceFactory, new DefaultExtractorsFactory(),
-                //        mainHandler, null);
-            default: {
-                throw new IllegalStateException("Unsupported type: " + type);
-            }
+        case C.TYPE_OTHER:
+            Log.d("TYPE_OTHER", uri.toString());
+            Log.d("TYPE_OTHER2", mediaDataSourceFactory.toString());
+            //300 is cache size you can define it as you want
+            return new ExtractorMediaSource(uri, mediaDataSourceFactory, new DefaultExtractorsFactory(), mainHandler, null);
+        default: {
+            throw new IllegalStateException("Unsupported type: " + type);
         }
     }
+}
 
     private ArrayList<MediaSource> buildTextSources() {
         ArrayList<MediaSource> textSources = new ArrayList<>();
